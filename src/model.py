@@ -2,31 +2,44 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.svm import LinearSVC
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import train_test_split
+from sklearn.calibration import CalibratedClassifierCV
 import numpy as np
 
 class HateSpeechClassifier:
-    def __init__(self, max_features=12000):  # Slightly increased from original
+    def __init__(self, max_features=13000):
+        # Create base classifier
+        base_svm = LinearSVC(
+            dual=False,
+            C=1.3,               
+            class_weight='balanced',
+            max_iter=2000,
+            tol=1e-4
+        )
+        
+        # Wrap with CalibratedClassifierCV for better probability estimates
+        self.calibrated_svc = CalibratedClassifierCV(base_svm, cv=5)
+        
+        # Create pipeline
         self.pipeline = Pipeline([
             ('tfidf', TfidfVectorizer(
                 max_features=max_features,
-                ngram_range=(1, 2),  # Keep bigrams which worked well
+                ngram_range=(1, 2),
                 min_df=2,
-                max_df=0.95,
-                sublinear_tf=True,    # Add sublinear scaling
-                strip_accents='unicode'
+                max_df=0.90,        # Slightly more restrictive
+                sublinear_tf=True,
+                strip_accents='unicode',
+                analyzer='word',
+                binary=False,       # Use term frequencies
+                use_idf=True,
+                smooth_idf=True,
+                norm='l2'
             )),
-            ('classifier', LinearSVC(
-                dual=False,
-                C=1.2,               # Slightly increased regularization parameter
-                class_weight='balanced',
-                max_iter=1500,       # Increased from original
-                tol=1e-4
-            ))
+            ('classifier', self.calibrated_svc)
         ])
     
     def train(self, X, y, validation_split=0.1):
         """Train the model with validation split"""
-        # Split the data
+        # Split with stratification
         X_train, X_val, y_train, y_val = train_test_split(
             X, y, 
             test_size=validation_split, 
