@@ -23,7 +23,7 @@ def main():
     
     # Initialize and train model
     print("\nTraining model...")
-    classifier = HateSpeechClassifier(max_features=10000)
+    classifier = HateSpeechClassifier()  # Removed max_features parameter
     X_val, y_val, val_predictions = classifier.train(X, y)
     
     # Evaluate model
