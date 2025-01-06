@@ -26,21 +26,25 @@ class TextPreprocessor:
             # Handle empty or very short texts
             if not text or len(text.strip()) < 2:
                 return ""
+                
+            # Convert to lowercase
+            text = text.lower()
             
-        # Convert to lowercase
-        text = text.lower()
-        
-        # Remove special characters and numbers
-        text = re.sub(r'[^a-zA-Z\s]', '', text)
-        
-        # Tokenize
-        tokens = word_tokenize(text)
-        
-        # Remove stopwords and lemmatize
-        tokens = [
-            self.lemmatizer.lemmatize(token) 
-            for token in tokens 
-            if token not in self.stop_words
-        ]
-        
-        return ' '.join(tokens)
+            # Remove special characters and numbers
+            text = re.sub(r'[^a-zA-Z\s]', '', text)
+            
+            # Tokenize
+            tokens = word_tokenize(text)
+            
+            # Remove stopwords and lemmatize
+            tokens = [
+                self.lemmatizer.lemmatize(token) 
+                for token in tokens 
+                if token not in self.stop_words
+            ]
+            
+            return ' '.join(tokens)
+            
+        except Exception as e:
+            print(f"Error preprocessing text: {str(e)}")
+            return ""
