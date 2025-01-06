@@ -5,9 +5,12 @@ from nltk.stem import WordNetLemmatizer
 import re
 
 # Download required NLTK data
-nltk.download('punkt', quiet=True)
-nltk.download('stopwords', quiet=True)
-nltk.download('wordnet', quiet=True)
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('wordnet')
+nltk.download('punkt_tab')
+nltk.download('averaged_perceptron_tagger')
+nltk.download('omw-1.4')
 
 class TextPreprocessor:
     def __init__(self):
@@ -16,8 +19,13 @@ class TextPreprocessor:
     
     def preprocess(self, text):
         """Clean and preprocess text data"""
-        if not isinstance(text, str):
-            return ""
+        try:
+            if not isinstance(text, str):
+                return ""
+            
+            # Handle empty or very short texts
+            if not text or len(text.strip()) < 2:
+                return ""
             
         # Convert to lowercase
         text = text.lower()
